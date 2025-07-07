@@ -1,4 +1,4 @@
-from flask import Flask, Response
+ from flask import Flask, Response
 import random
 import string
 import os
@@ -19,38 +19,11 @@ def key_page():
     <html>
     <head>
       <title>Generated Key</title>
-      <style>
-        body {{
-          background-color: #121212;
-          color: white;
-          font-family: Arial;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-        }}
-        .box {{
-          background: #1e1e1e;
-          padding: 20px;
-          border-radius: 8px;
-          margin: 10px;
-        }}
-      </style>
     </head>
-    <body>
-      <div class="box">
-        <h2>Your Key:</h2>
-        <code id="key">{key}</code><br><br>
-        <button onclick="copyKey()">📋 Copy</button>
-      </div>
-      <script>
-        function copyKey() {{
-          const text = document.getElementById("key").textContent;
-          navigator.clipboard.writeText(text);
-          alert("Key copied: " + text);
-        }}
-      </script>
+    <body style='background:#111;color:white;font-family:sans-serif;text-align:center;padding-top:50px;'>
+      <h2>Your Generated Key</h2>
+      <h1 id='key'>{key}</h1>
+      <button onclick="navigator.clipboard.writeText('{key}');alert('Copied!')">📋 Copy</button>
     </body>
     </html>
     """
