@@ -1,48 +1,37 @@
-from flask import Flask, request, jsonify
-import json
+from flask import Flask, jsonify
+import random
+import string
 import os
 
 app = Flask(__name__)
-KEY_FILE = "keys.json"
 
-# Load or create key store
-if not os.path.exists(KEY_FILE):
-    with open(KEY_FILE, "w") as f:
-        json.dump({}, f)
+# Example simple key DB (replace with JSON file or DB later)
+valid_keys = []
 
-def load_keys():
-    with open(KEY_FILE, "r") as f:
-        return json.load(f)
+def generate_key(length=16):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
-def save_keys(data):
-    with open(KEY_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
-@app.route("/")
+@app.route('/')
 def home():
     return "✅ Key System Running"
 
-@app.route("/verifykey")
+@app.route('/generatekey')
+def gen_key():
+    key = generate_key()
+    valid_keys.append(key)
+    return key  # returns key as plain text
+
+@app.route('/verifykey')
 def verify_key():
+    from flask import request
     key = request.args.get("key")
     hwid = request.args.get("hwid")
 
-    if not key or not hwid:
-        return jsonify({ "success": False, "message": "Missing key or hwid." }), 400
+    if key in valid_keys:
+        return jsonify({"success": True, "hwid": hwid})
+    return jsonify({"success": False, "message": "Invalid key"})
 
-    data = load_keys()
-
-    if key in data:
-        if data[key] == hwid:
-            return jsonify({ "success": True })
-        else:
-            return jsonify({ "success": False, "message": "Key used on another device." })
-    else:
-        # Save new HWID if unused
-        data[key] = hwid
-        save_keys(data)
-        return jsonify({ "success": True })
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
