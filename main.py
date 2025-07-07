@@ -1,92 +1,61 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, Response
 import random
 import string
+import os
 
 app = Flask(__name__)
 
-# Generates a random key
 def generate_random_key():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
 
-# Serve raw key at /generatekey (used by script)
 @app.route('/generatekey')
 def generate_key():
-    key = generate_random_key()
-    return key
+    return generate_random_key()
 
-# Serve the HTML page at /generatekey.html
 @app.route('/generatekey.html')
 def key_page():
-    html_content = """
-    <!DOCTYPE html>
+    key = generate_random_key()
+    html = f"""
     <html>
     <head>
       <title>Generated Key</title>
       <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #1e1e1e;
-          color: #fff;
+        body {{
+          background-color: #121212;
+          color: white;
+          font-family: Arial;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           height: 100vh;
-        }
-        #keyBox {
-          background-color: #333;
+        }}
+        .box {{
+          background: #1e1e1e;
           padding: 20px;
           border-radius: 8px;
-          margin-bottom: 15px;
-          font-size: 18px;
-          word-break: break-all;
-        }
-        button {
-          padding: 10px 20px;
-          background-color: #4CAF50;
-          border: none;
-          color: white;
-          border-radius: 6px;
-          font-size: 16px;
-          cursor: pointer;
-        }
-        button:hover {
-          background-color: #45a049;
-        }
+          margin: 10px;
+        }}
       </style>
     </head>
     <body>
-
-      <h1>✅ Your Generated Key</h1>
-      <div id="keyBox">Generating...</div>
-      <button onclick="copyKey()">📋 Copy Key</button>
-
+      <div class="box">
+        <h2>Your Key:</h2>
+        <code id="key">{key}</code><br><br>
+        <button onclick="copyKey()">📋 Copy</button>
+      </div>
       <script>
-        fetch('/generatekey')
-          .then(res => res.text())
-          .then(data => {
-            document.getElementById('keyBox').textContent = data;
-            setTimeout(() => {
-              navigator.clipboard.writeText(data);
-              document.querySelector("button").textContent = "✅ Key Copied!";
-            }, 3000);
-          });
-
-        function copyKey() {
-          const key = document.getElementById("keyBox").textContent;
-          navigator.clipboard.writeText(key);
-          document.querySelector("button").textContent = "✅ Key Copied!";
-        }
+        function copyKey() {{
+          const text = document.getElementById("key").textContent;
+          navigator.clipboard.writeText(text);
+          alert("Key copied: " + text);
+        }}
       </script>
-
     </body>
     </html>
     """
-    return Response(html_content, mimetype='text/html')
+    return Response(html, mimetype='text/html')
 
-# Set your port if needed (important for Render)
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 10000))  # make sure it's 0.0.0.0 bound
+    port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
-
